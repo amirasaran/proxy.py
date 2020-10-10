@@ -254,6 +254,7 @@ class Proxy:
                     args.ca_file)),
             hostname=cast(IpAddress,
                           opts.get('hostname', ipaddress.ip_address(args.hostname))),
+            source_ip=opts.get('source_ip', args.source_ip),
             port=cast(int, opts.get('port', args.port)),
             backlog=cast(int, opts.get('backlog', args.backlog)),
             num_workers=cast(int, opts.get('num_workers', args.num_workers)),

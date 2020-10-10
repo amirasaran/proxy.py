@@ -52,6 +52,12 @@ flags.add_argument(
     help='Default: ::1. Server IP address.')
 
 flags.add_argument(
+    '--source-ip',
+    type=str,
+    default='0',
+    help='Default: 0. Source IP address for outgoing sockets.')
+
+flags.add_argument(
     '--port', type=int, default=DEFAULT_PORT,
     help='Default: 8899. Server port.')
 

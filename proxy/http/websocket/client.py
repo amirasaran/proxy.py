@@ -14,7 +14,7 @@ import socket
 import secrets
 import ssl
 
-from typing import Optional, Union, Callable
+from typing import Optional, Union, Callable, Tuple
 
 from .frame import WebsocketFrame
 
@@ -31,13 +31,18 @@ class WebsocketClient(TcpConnection):
                  hostname: bytes,
                  port: int,
                  path: bytes = b'/',
-                 on_message: Optional[Callable[[WebsocketFrame], None]] = None) -> None:
+                 on_message: Optional[Callable[[WebsocketFrame], None]] = None,
+                 source_address: Tuple[str, int] = None
+                 ) -> None:
         super().__init__(tcpConnectionTypes.CLIENT)
         self.hostname: bytes = hostname
         self.port: int = port
         self.path: bytes = path
+        self.source_address: Tuple[str, int] = source_address
         self.sock: socket.socket = new_socket_connection(
-            (socket.gethostbyname(text_(self.hostname)), self.port))
+            (socket.gethostbyname(text_(self.hostname)), self.port),
+            source_address=self.source_address
+        )
         self.on_message: Optional[Callable[[
             WebsocketFrame], None]] = on_message
         self.selector: selectors.DefaultSelector = selectors.DefaultSelector()

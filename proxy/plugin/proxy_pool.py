@@ -10,7 +10,7 @@
 """
 import random
 import socket
-from typing import Optional, Any
+from typing import Optional, Any, Tuple
 
 from ..common.constants import DEFAULT_BUFFER_SIZE, SLASH, COLON
 from ..common.utils import new_socket_connection
@@ -29,9 +29,10 @@ class ProxyPoolPlugin(HttpProxyBasePlugin):
         ('localhost', 9001),
     ]
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, source_address: Tuple[str, int] = None,  **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.conn: Optional[socket.socket] = None
+        self.source_address: Tuple[str, int] = source_address
 
     def before_upstream_connection(
             self, request: HttpParser) -> Optional[HttpParser]:
@@ -40,7 +41,9 @@ class ProxyPoolPlugin(HttpProxyBasePlugin):
         """
         # Implement your own logic here e.g. round-robin, least connection etc.
         self.conn = new_socket_connection(
-            random.choice(self.UPSTREAM_PROXY_POOL))
+            random.choice(self.UPSTREAM_PROXY_POOL),
+            source_address=self.source_address
+        )
         return None
 
     def handle_client_request(

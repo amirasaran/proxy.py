@@ -74,8 +74,8 @@ def build_http_response(status_code: int,
         if k.lower() == b'transfer-encoding':
             has_transfer_encoding = True
     if body is not None and \
-            not has_transfer_encoding and \
-            not has_content_length:
+        not has_transfer_encoding and \
+        not has_content_length:
         headers[b'Content-Length'] = bytes_(len(body))
     return build_http_pkt(line, headers, body)
 
@@ -100,10 +100,10 @@ def build_http_pkt(line: List[bytes],
 
 
 def build_websocket_handshake_request(
-        key: bytes,
-        method: bytes = b'GET',
-        url: bytes = b'/',
-        host: bytes = b'localhost') -> bytes:
+    key: bytes,
+    method: bytes = b'GET',
+    url: bytes = b'/',
+    host: bytes = b'localhost') -> bytes:
     """
     Build and returns a Websocket handshake request packet.
 
@@ -167,7 +167,7 @@ def wrap_socket(conn: socket.socket, keyfile: str,
 
 
 def new_socket_connection(
-        addr: Tuple[str, int], timeout: int = DEFAULT_TIMEOUT) -> socket.socket:
+    addr: Tuple[str, int], timeout: int = DEFAULT_TIMEOUT, source_address: Tuple[str, int] = None) -> socket.socket:
     conn = None
     try:
         ip = ipaddress.ip_address(addr[0])
@@ -182,40 +182,42 @@ def new_socket_connection(
             conn.settimeout(timeout)
             conn.connect((addr[0], addr[1], 0, 0))
     except ValueError:
-        pass    # does not appear to be an IPv4 or IPv6 address
+        pass  # does not appear to be an IPv4 or IPv6 address
 
     if conn is not None:
         return conn
 
     # try to establish dual stack IPv4/IPv6 connection.
-    return socket.create_connection(addr, timeout=timeout)
+    return socket.create_connection(addr, timeout=timeout, source_address=source_address)
 
 
 class socket_connection(contextlib.ContextDecorator):
     """Same as new_socket_connection but as a context manager and decorator."""
 
-    def __init__(self, addr: Tuple[str, int]):
+    def __init__(self, addr: Tuple[str, int], source_address: Tuple[str, int] = None):
         self.addr: Tuple[str, int] = addr
         self.conn: Optional[socket.socket] = None
+        self.source_address: Tuple[str, int] = source_address
         super().__init__()
 
     def __enter__(self) -> socket.socket:
-        self.conn = new_socket_connection(self.addr)
+        self.conn = new_socket_connection(self.addr, source_address=self.source_address)
         return self.conn
 
     def __exit__(
-            self,
-            exc_type: Optional[Type[BaseException]],
-            exc_val: Optional[BaseException],
-            exc_tb: Optional[TracebackType]) -> None:
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType]) -> None:
         if self.conn:
             self.conn.close()
 
-    def __call__(self, func: Callable[..., Any]) -> Callable[[Tuple[Any, ...], Dict[str, Any]], Any]:   # type: ignore
+    def __call__(self, func: Callable[..., Any]) -> Callable[[Tuple[Any, ...], Dict[str, Any]], Any]:  # type: ignore
         @functools.wraps(func)
         def decorated(*args: Any, **kwargs: Any) -> Any:
             with self as conn:
                 return func(conn, *args, **kwargs)
+
         return decorated
 
 

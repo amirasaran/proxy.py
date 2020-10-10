@@ -19,10 +19,11 @@ from ...common.utils import new_socket_connection
 class TcpServerConnection(TcpConnection):
     """Establishes connection to upstream server."""
 
-    def __init__(self, host: str, port: int):
+    def __init__(self, host: str, port: int, source_address: Tuple[str, int] = None):
         super().__init__(tcpConnectionTypes.SERVER)
         self._conn: Optional[Union[ssl.SSLSocket, socket.socket]] = None
         self.addr: Tuple[str, int] = (host, int(port))
+        self.source_address: Tuple[str, int] = source_address
 
     @property
     def connection(self) -> Union[ssl.SSLSocket, socket.socket]:
@@ -33,7 +34,7 @@ class TcpServerConnection(TcpConnection):
     def connect(self) -> None:
         if self._conn is not None:
             return
-        self._conn = new_socket_connection(self.addr)
+        self._conn = new_socket_connection(self.addr, source_address=self.source_address)
 
     def wrap(self, hostname: str, ca_file: Optional[str]) -> None:
         ctx = ssl.create_default_context(

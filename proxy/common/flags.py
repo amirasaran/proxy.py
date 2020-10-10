@@ -12,10 +12,10 @@ import os
 import socket
 import multiprocessing
 
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Tuple
 
 from .types import IpAddress
-from .constants import DEFAULT_BACKLOG, DEFAULT_BASIC_AUTH
+from .constants import DEFAULT_BACKLOG, DEFAULT_BASIC_AUTH, DEFAULT_SOURCE_IP
 from .constants import DEFAULT_TIMEOUT, DEFAULT_DEVTOOLS_WS_PATH, DEFAULT_DISABLE_HEADERS
 from .constants import DEFAULT_ENABLE_STATIC_SERVER, DEFAULT_ENABLE_EVENTS
 from .constants import DEFAULT_THREADLESS
@@ -54,7 +54,9 @@ class Flags:
             timeout: int = DEFAULT_TIMEOUT,
             threadless: bool = DEFAULT_THREADLESS,
             enable_events: bool = DEFAULT_ENABLE_EVENTS,
-            pid_file: Optional[str] = DEFAULT_PID_FILE) -> None:
+            pid_file: Optional[str] = DEFAULT_PID_FILE,
+            source_ip: Optional[str] = DEFAULT_SOURCE_IP) -> None:
+        self.source_address: Tuple[str, int] = (source_ip, 0)
         self.pid_file = pid_file
         self.threadless = threadless
         self.timeout = timeout

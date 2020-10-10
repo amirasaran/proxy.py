@@ -542,7 +542,7 @@ class HttpProxyPlugin(HttpProtocolHandlerPlugin):
     def connect_upstream(self) -> None:
         host, port = self.request.host, self.request.port
         if host and port:
-            self.server = TcpServerConnection(text_(host), port)
+            self.server = TcpServerConnection(text_(host), port, source_address=self.flags.source_address)
             try:
                 logger.debug(
                     'Connecting to upstream %s:%s' %

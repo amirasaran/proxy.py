@@ -111,7 +111,10 @@ class ConnectTunnelHandler(BaseServerHandler):  # type: ignore
     def connect_upstream(self) -> None:
         assert self.request.host and self.request.port
         self.upstream = TcpServerConnection(
-            text_(self.request.host), self.request.port)
+            text_(self.request.host),
+            self.request.port,
+            source_address=self.flags.source_address
+        )
         self.upstream.connect()
         print('Connection established with upstream {0}:{1}'.format(
             text_(self.request.host), self.request.port))
